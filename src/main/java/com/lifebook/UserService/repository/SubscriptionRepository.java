@@ -1,0 +1,17 @@
+package com.lifebook.UserService.repository;
+
+import com.lifebook.UserService.domain.Subscription;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.util.UUID;
+
+@Repository
+public interface SubscriptionRepository extends JpaRepository<Subscription, UUID> {
+
+    @Query("DELETE FROM Subscriptions sub WHERE sub.key = :key AND sub.user.id = :userId")
+    void deleteByKeyAndUserId(@Param("key") String key, @Param("userId") UUID userId);
+
+}

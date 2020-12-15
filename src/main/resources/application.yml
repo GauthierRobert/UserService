@@ -1,0 +1,28 @@
+server:
+  port: 8082
+
+amqp:
+  host: localhost
+  port: 5672
+
+#DATABASE PostgreSQL
+spring:
+  datasource:
+    #url: jdbc:postgresql://lifebook-instance.c1wagot7vqzy.eu-west-3.rds.amazonaws.com:5432/
+    url: jdbc:postgresql://localhost:5432/
+    username: postgres
+    password: postgres
+    hikari:
+      connectionTimeout: 20000
+      maximumPoolSize: 5
+  #JPA
+  jpa:
+    hibernate:
+      #drop n save table again, good for testing, comment this in production
+      ddl-auto: create-drop
+      #ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: true
