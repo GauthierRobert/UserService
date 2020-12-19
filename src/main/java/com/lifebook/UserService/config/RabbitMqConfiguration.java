@@ -16,17 +16,19 @@ public class RabbitMqConfiguration {
 
 
 
-    @Value("${amqp.port:5672}")
-    private int port;
-    @Value("${amqp.host:localhost}")
-    private String hostname;
+    @Value("${amqp.uri:localhost:5672}")
+    private String uri;
+    @Value("${amqp.username:guest}")
+    private String username;
+    @Value("${amqp.password:guest}")
+    private String password;
 
     @Bean
     public ConnectionFactory connectionFactory() {
-        CachingConnectionFactory connectionFactory = new CachingConnectionFactory(hostname);
-        connectionFactory.setPort(port);
-        connectionFactory.setUsername("guest");
-        connectionFactory.setPassword("guest");
+        CachingConnectionFactory connectionFactory = new CachingConnectionFactory();
+        connectionFactory.setUri(uri);
+        connectionFactory.setUsername(username);
+        connectionFactory.setPassword(password);
         return connectionFactory;
     }
 

@@ -13,7 +13,7 @@ import java.net.URL;
 @Service
 public class FacebookService {
 
-    private static final String HTTPS_GRAPH_FACEBOOK = "https://graph.facebook.com/me?access_token=\"";
+    private static final String HTTPS_GRAPH_FACEBOOK = "https://graph.facebook.com/me?access_token=";
 
     public FacebookProfile getFacebookProfile(String accessToken) throws IOException {
 
