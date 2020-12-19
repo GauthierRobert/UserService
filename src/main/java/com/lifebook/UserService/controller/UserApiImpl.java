@@ -1,5 +1,7 @@
 package com.lifebook.UserService.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lifebook.UserService.domain.FacebookProfile;
 import com.lifebook.UserService.domain.Subscription;
 import com.lifebook.UserService.domain.User;
@@ -10,13 +12,17 @@ import com.lifebook.UserService.service.UserService;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.lifebook.UserService.domain.builder.UserBuilder.anUser;
 import static com.lifebook.UserService.domain.builder.UserBuilder.modify;
+import static org.springframework.http.ResponseEntity.ok;
 
 @RestController
 public class UserApiImpl implements UserApi {
@@ -27,23 +33,26 @@ public class UserApiImpl implements UserApi {
 
     @Qualifier("userExchange")
     private final TopicExchange userExchange;
+    @Qualifier("subscriptionExchange")
+    private final TopicExchange subscriptionExchange;
     private final RabbitTemplate rabbitTemplate;
 
 
-    public UserApiImpl(FacebookService facebookService, UserService userService, SubscriptionService subscriptionService, TopicExchange userExchange, RabbitTemplate rabbitTemplate) {
+    public UserApiImpl(FacebookService facebookService, UserService userService, SubscriptionService subscriptionService, TopicExchange userExchange, TopicExchange subscriptionExchange, RabbitTemplate rabbitTemplate) {
         this.facebookService = facebookService;
         this.userService = userService;
         this.subscriptionService = subscriptionService;
         this.userExchange = userExchange;
+        this.subscriptionExchange = subscriptionExchange;
         this.rabbitTemplate = rabbitTemplate;
     }
 
     @Override
-    public UserDto login(String token) throws IOException {
+    public ResponseEntity login(String token) throws IOException {
 
         FacebookProfile facebookProfile = facebookService.getFacebookProfile(token);
 
-        User user = userService.findBy(facebookProfile.getId());
+        User user = userService.findByFacebookId(facebookProfile.getId());
 
         if (user == null) {
             user = userService.save(anUser().withProfile(facebookProfile).build());
@@ -52,7 +61,29 @@ public class UserApiImpl implements UserApi {
             rabbitTemplate.convertAndSend(userExchange.getName(), "user.updated", convert(user));
         }
 
-        return convert(user);
+        return ok().body(convert(user));
+    }
+
+    @Override
+    public ResponseEntity Subscribe(UUID userId, String key) throws JsonProcessingException {
+        User user = userService.findById(userId);
+        subscriptionService.subscribe(user, key);
+
+        String jsonUser = new ObjectMapper().writeValueAsString(convert(user, key));
+
+        rabbitTemplate.convertAndSend(subscriptionExchange.getName(), "group.subscribe", jsonUser);
+        return ok().build();
+    }
+
+    @Override
+    public ResponseEntity unSubscribe(UUID userId, String key) throws JsonProcessingException {
+        User user = userService.findById(userId);
+        subscriptionService.unSubscribe(user, key);
+
+        String jsonUser = new ObjectMapper().writeValueAsString(convert(user, key));
+
+        rabbitTemplate.convertAndSend(subscriptionExchange.getName(), "group.unsubscribe", jsonUser);
+        return ok().build();
     }
 
     private UserDto convert(User user) {
@@ -62,13 +93,10 @@ public class UserApiImpl implements UserApi {
                 user.getSubscriptions().stream().map(Subscription::getKey).collect(Collectors.toList()));
     }
 
-    @Override
-    public void Subscribe(String userId, String key) {
-        subscriptionService.subscribe(userId, key);
-    }
-
-    @Override
-    public void unSubscribe(String userId, String key) {
-        subscriptionService.unSubscribe(userId, key);
+    private UserDto convert(User user, String key) {
+        return new UserDto(user.getId(),
+                user.getProfile().getName(),
+                user.getProfile().getImageUrl(),
+                Collections.singletonList(key));
     }
 }

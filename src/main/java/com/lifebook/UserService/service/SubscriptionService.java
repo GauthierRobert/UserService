@@ -26,14 +26,12 @@ public class SubscriptionService {
     }
 
 
-    public void subscribe(String userId, String key) {
-        User user = userRepository.findById(UUID.fromString(userId)).orElseThrow(() -> new EntityNotFoundException("User not found with Id : " + userId));
-
+    public void subscribe(User user, String key) {
         subscriptionRepository.save(new Subscription(key, user));
     }
 
-    public void unSubscribe(String userId, String key) {
-        subscriptionRepository.deleteByKeyAndUserId(key, UUID.fromString(userId));
+    public void unSubscribe(User user, String key) {
+        subscriptionRepository.deleteByKeyAndUserId(key, user.getId());
     }
 
 

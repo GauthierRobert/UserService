@@ -24,6 +24,26 @@ public class UserDto implements Serializable {
         this.groupsKeys = groupsKeys;
     }
 
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public void setCompleteName(String completeName) {
+        this.completeName = completeName;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public List<String> getGroupsKeys() {
+        return groupsKeys;
+    }
+
+    public void setGroupsKeys(List<String> groupsKeys) {
+        this.groupsKeys = groupsKeys;
+    }
+
     public UUID getId() {
         return id;
     }

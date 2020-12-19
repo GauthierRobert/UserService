@@ -14,6 +14,6 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     @Query("SELECT u FROM Users u WHERE u.profile.id = :facebook_id")
     @EntityGraph(attributePaths = {"subscriptions"})
-    User findby(@Param("facebook_id") String facebookId);
+    User findBy(@Param("facebook_id") String facebookId);
 
 }

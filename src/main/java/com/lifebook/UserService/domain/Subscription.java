@@ -9,12 +9,16 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import java.util.UUID;
 
 @Entity(name = "Subscriptions")
-@Table(name = "Subscriptions")
+@Table(name = "Subscriptions",
+        uniqueConstraints={
+                @UniqueConstraint(columnNames = {"key", "userId"})})
 public class Subscription {
 
     @Id
@@ -23,10 +27,15 @@ public class Subscription {
     @Type(type="pg-uuid")
     private UUID id;
 
+    @Column(name = "key")
     private String key;
 
+    @JoinColumn(name = "userId")
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
+
+    public Subscription() {
+    }
 
     public String getKey() {
         return key;
