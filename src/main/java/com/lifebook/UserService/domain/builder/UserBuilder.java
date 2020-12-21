@@ -1,6 +1,6 @@
 package com.lifebook.UserService.domain.builder;
 
-import com.lifebook.UserService.domain.FacebookProfile;
+import com.lifebook.UserService.domain.facebook.FacebookProfile;
 import com.lifebook.UserService.domain.Subscription;
 import com.lifebook.UserService.domain.User;
 

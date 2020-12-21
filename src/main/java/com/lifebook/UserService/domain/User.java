@@ -1,5 +1,6 @@
 package com.lifebook.UserService.domain;
 
+import com.lifebook.UserService.domain.facebook.FacebookProfile;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.Embedded;

@@ -2,7 +2,7 @@ package com.lifebook.UserService.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lifebook.UserService.domain.FacebookProfile;
+import com.lifebook.UserService.domain.facebook.FacebookProfile;
 import com.lifebook.UserService.domain.Subscription;
 import com.lifebook.UserService.domain.User;
 import com.lifebook.UserService.dto.UserDto;
@@ -58,7 +58,8 @@ public class UserApiImpl implements UserApi {
             user = userService.save(anUser().withProfile(facebookProfile).build());
         } else if (!user.getProfile().equals(facebookProfile)) {
             user = userService.save(modify(user).withProfile(facebookProfile).build());
-            rabbitTemplate.convertAndSend(userExchange.getName(), "user.updated", convert(user));
+            String jsonUser = new ObjectMapper().writeValueAsString(convert(user));
+            rabbitTemplate.convertAndSend(userExchange.getName(), "user.updated", jsonUser);
         }
 
         return ok().body(convert(user));
@@ -89,14 +90,14 @@ public class UserApiImpl implements UserApi {
     private UserDto convert(User user) {
         return new UserDto(user.getId(),
                 user.getProfile().getName(),
-                user.getProfile().getImageUrl(),
+                user.getProfile().getPicture().getData().getUrl(),
                 user.getSubscriptions().stream().map(Subscription::getKey).collect(Collectors.toList()));
     }
 
     private UserDto convert(User user, String key) {
         return new UserDto(user.getId(),
                 user.getProfile().getName(),
-                user.getProfile().getImageUrl(),
+                user.getProfile().getPicture().getData().getUrl(),
                 Collections.singletonList(key));
     }
 }
